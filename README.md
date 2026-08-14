@@ -1,105 +1,68 @@
+![Cover](docs/images/cover.png)
+
 # dsh-plugin-working-status
 
-Click-to-edit override for the running-turn status label — the shimmering
-"Deep diving..." text (with the elapsed-time clock) that the DeepSeek Harness
-Web GUI renders while a turn is running.
+One line: click the "Deep diving..." status text, type whatever you actually want it to say, and it stays that way everywhere, forever.
 
 ## What it does
 
-- **Click the field to edit.** Click anywhere on the status field (label or
-  clock area) to open a small inline editor pre-filled with the current text.
-  `Enter` or clicking away commits, `Esc` cancels.
-- **Global replacement.** The edited text replaces the label on every current
-  and future status field — every turn, every session, after page reloads and
-  app restarts.
-- **Empty commit restores the original.** Clear the field and commit to reset
-  the label to the built-in text (captured from the live render, so it follows
-  whatever the UI actually displays, in any language).
-- **Plugin configuration card.** A "Working status" card appears under
-  Settings → Plugins → Plugin configuration with the same label as a staged
-  form (Save / Discard / Reset to default). The card is always visible and
-  edits the plugin's own override state — it does not depend on a
-  wire-exposed settings namespace (see below).
-- **Style-safe.** The plugin only mutates the label's text node after React
-  commits its DOM. The shimmer animation, the elapsed-time clock, the ARIA
-  live region, and the loading-time render are untouched.
+- **Click to edit.** Click the status label (or the clock next to it), edit in place, press `Enter` or click away to save, `Esc` to chicken out.
+- **One edit, everywhere.** The new text applies to every current and future turn, in every session — across reloads and restarts.
+- **Empty commit restores the default.** Clear the field and save to go back to the built-in text. The default is captured from the live render, so it follows whatever the UI actually shows, in any language.
+- **Nothing else is touched.** Only the label's text node changes: the shimmer animation, the elapsed-time clock, the ARIA live region, and the loading-time render all stay exactly as they are.
 
-## How it persists
+## How to edit
 
-The override is stored in the browser's localStorage mirror
-(`dsh.turn-status.label`) — shared across every tab of the origin and kept
-across reloads and restarts; remote pages work the same way.
+Click "Deep diving..." and edit it directly:
 
-The Host half also registers the `turn-status` settings namespace (field
-`label`) so the value could live in the Host user-settings document like the
-app's own preferences. In the current DSH version this channel is inert for
-Web clients: `dsh-host-apiproxy` serves only its fixed
-`WEB_SETTINGS_NAMESPACES` allowlist (plus model-provider namespaces) and
-answers `settings-not-exposed` for anything else, even when the namespace is
-registered. Exposing a namespace from `settings.register()` itself is
-documented deferred work in that package; when it lands, this plugin's
-browser half starts preferring the Host value automatically, with the
-localStorage mirror as fallback. The namespace and storage key keep their
-original names so nothing is lost either way.
+![Click the status text to edit](docs/images/click-to-edit.png)
+
+## What it looks like
+
+| Effect one | Effect two |
+| --- | --- |
+| ![Effect one](docs/images/effect-1.png) | ![Effect two](docs/images/effect-2.png) |
 
 ## Installation
 
-This package is a dual-face DSH plugin: a trivial Host half (registers the
-settings namespace) plus the browser half (`dsh.client`, platform `web`).
+One command:
 
-1. Install the package into the profile with `dsh plugin` (forwards to pnpm;
-   works for file paths, registry packages, and git repositories — no build
-   step is needed, the checked-in `lib/` is the artifact):
+```sh
+dsh plugin --profile web add github:Abyss-Seeker/not-deep-diving-dsh-plugin
+```
 
-   ```sh
-   dsh plugin --profile web add github:Abyss-Seeker/not-deep-diving-dsh-plugin
-   ```
+Then enable the row in the profile's patch layer, `$DSH_HOME/profiles/web/cordis.patch.yml`:
 
-   Equivalent direct specs:
+```yaml
+- insert:
+    - id: working-status-editor
+      name: dsh-plugin-working-status
+```
 
-   ```sh
-   dsh plugin --profile web add git+https://github.com/Abyss-Seeker/not-deep-diving-dsh-plugin.git
-   dsh plugin --profile web add file:<path-to-this-directory>
-   ```
+Reload the GUI page. No build step is involved — the checked-in `lib/` is the artifact. `file:` paths and registry package names work the same way; a pnpm-free fallback lives in `scripts/install.mjs`.
 
-   pnpm-less alternative (a real directory copy into the profile, the same
-   resolution shape a git install produces):
+## Plugin configuration card
 
-   ```sh
-   node scripts/install.mjs "$DSH_HOME/profiles/web"
-   ```
+After installation, Settings → Plugins → Plugin configuration gains a "Working status" card: the same field, with Save, Discard, and Reset to default, writing the exact same value as the click-to-edit flow.
 
-2. Enable the row in the profile's patch layer,
-   `$DSH_HOME/profiles/web/cordis.patch.yml`:
+## Plays well with dsh-web-ui
 
-   ```yaml
-   - insert:
-       - id: working-status-editor
-         name: dsh-plugin-working-status
-   ```
+If you also run dsh-web-ui (SSH, task board, that family), both coexist fine — one card each, nobody steps on anybody:
 
-3. Reload the already-open GUI page (the boot graph is injected into
-   `index.html`; the running server picks the new entry up live, the browser
-   needs one refresh). Settings → Plugins lists the new entry.
+![Coexisting with dsh-web-ui](docs/images/with-dsh-web-ui.png)
 
-Re-run step 1 after editing the sources to sync the installed copy.
+## Persistence, honestly
 
-## Configuration
+- Today the text lives in a localStorage mirror (`dsh.turn-status.label`): shared across every tab of the origin, kept across reloads and restarts.
+- The Host half also registers the `turn-status` settings namespace, but the current DSH API gateway only serves its fixed allowlist to browsers (`WEB_SETTINGS_NAMESPACES` in `dsh-host-apiproxy`); anything else gets `settings-not-exposed` even when registered. Letting plugins expose configuration from `settings.register()` itself is marked deferred work in that package. When it lands, this plugin switches to Host storage automatically with localStorage as the fallback — your text is safe either way.
 
-- The inline status editor and the Plugin configuration card are the intended
-  surfaces; both write the same override. The Host `turn-status` settings
-  namespace (field `label`, string) is registered for future versions — see
-  the persistence note above.
-- `window.__dshWorkingStatusEditor` exposes `elements()` (matched DOM fields)
-  and `label()` (the effective label) for diagnostics.
+## Diagnostics and compatibility
 
-## Compatibility
+- `window.__dshWorkingStatusEditor` exposes `elements()` (currently matched status fields) and `label()` (the effective label).
+- The status field is found via `role="status"` + `aria-live="polite"` + the stable `turnStatus` CSS-module local name. If a future DSH renames that class, the plugin warns and stops rewriting instead of breaking the page.
+- The configuration card registers into the `settings.plugin.item` slot declared by `ui-settings-plugins`; without that surface, click-to-edit still works.
 
-Targets the shipped `ui-conversation` structure: the status field is
-identified by `role="status"`, `aria-live="polite"`, and the stable
-`turnStatus` CSS-module local name (the hash prefix may change between DSH
-builds; the local name does not). If a DSH update renames that class, the
-plugin logs a warning per field and stops rewriting rather than corrupting
-the DOM. The Plugin configuration card registers into the
-`settings.plugin.item` slot declared by `ui-settings-plugins`; without that
-surface, the click-to-edit behavior still works.
+## Development
+
+- `test/smoke.mjs` exercises replacement, commit/cancel/reset, the card form, and persistence sync against a fake DOM. Run it after changes.
+- To sync edited sources into a profile: re-run the install command above, or `node scripts/install.mjs "$DSH_HOME/profiles/web"`.
