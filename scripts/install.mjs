@@ -33,7 +33,7 @@ await mkdir(dirname(target), { recursive: true });
 if (existsSync(target)) await rm(target, { recursive: true, force: true });
 await mkdir(target, { recursive: true });
 
-for (const rel of ["package.json", "lib", "README.md", "README.zh.md"]) {
+for (const rel of ["package.json", "lib", "README.md", "README.en.md"]) {
   await cp(join(source, rel), join(target, rel), { recursive: true, force: true });
 }
 console.log(`installed dsh-plugin-working-status -> ${target}`);
