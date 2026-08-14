@@ -1,6 +1,6 @@
 ![Cover](docs/images/cover.png)
 
-[涓枃鐗圿(README.md)
+[中文版](README.md)
 
 # dsh-plugin-working-status
 
@@ -17,7 +17,7 @@ Then enable the row in `$DSH_HOME/profiles/web/cordis.patch.yml` (see "Installat
 ## What it does
 
 - **Click to edit.** Click the status label (or the clock next to it), edit in place, press `Enter` or click away to save, `Esc` to chicken out.
-- **One edit, everywhere.** The new text applies to every current and future turn, in every session 鈥?across reloads and restarts.
+- **One edit, everywhere.** The new text applies to every current and future turn, in every session — across reloads and restarts.
 - **Empty commit restores the default.** Clear the field and save to go back to the built-in text. The default is captured from the live render, so it follows whatever the UI actually shows, in any language.
 - **Nothing else is touched.** Only the label's text node changes: the shimmer animation, the elapsed-time clock, the ARIA live region, and the loading-time render all stay exactly as they are.
 
@@ -49,22 +49,22 @@ Then enable the row in the profile's patch layer, `$DSH_HOME/profiles/web/cordis
       name: dsh-plugin-working-status
 ```
 
-Reload the GUI page. No build step is involved 鈥?the checked-in `lib/` is the artifact. `file:` paths and registry package names work the same way; a pnpm-free fallback lives in `scripts/install.mjs`.
+Reload the GUI page. No build step is involved — the checked-in `lib/` is the artifact. `file:` paths and registry package names work the same way; a pnpm-free fallback lives in `scripts/install.mjs`.
 
 ## Plugin configuration card
 
-After installation, Settings 鈫?Plugins 鈫?Plugin configuration gains a "Working status" card: the same field, with Save, Discard, and Reset to default, writing the exact same value as the click-to-edit flow.
+After installation, Settings → Plugins → Plugin configuration gains a "Working status" card: the same field, with Save, Discard, and Reset to default, writing the exact same value as the click-to-edit flow.
 
 ## Plays well with dsh-web-ui
 
-If you also run dsh-web-ui (SSH, task board, that family), both coexist fine 鈥?one card each, nobody steps on anybody:
+If you also run dsh-web-ui (SSH, task board, that family), both coexist fine — one card each, nobody steps on anybody:
 
 ![Coexisting with dsh-web-ui](docs/images/with-dsh-web-ui.png)
 
 ## Persistence, honestly
 
 - Today the text lives in a localStorage mirror (`dsh.turn-status.label`): shared across every tab of the origin, kept across reloads and restarts.
-- The Host half also registers the `turn-status` settings namespace, but the current DSH API gateway only serves its fixed allowlist to browsers (`WEB_SETTINGS_NAMESPACES` in `dsh-host-apiproxy`); anything else gets `settings-not-exposed` even when registered. Letting plugins expose configuration from `settings.register()` itself is marked deferred work in that package. When it lands, this plugin switches to Host storage automatically with localStorage as the fallback 鈥?your text is safe either way.
+- The Host half also registers the `turn-status` settings namespace, but the current DSH API gateway only serves its fixed allowlist to browsers (`WEB_SETTINGS_NAMESPACES` in `dsh-host-apiproxy`); anything else gets `settings-not-exposed` even when registered. Letting plugins expose configuration from `settings.register()` itself is marked deferred work in that package. When it lands, this plugin switches to Host storage automatically with localStorage as the fallback — your text is safe either way.
 
 ## Diagnostics and compatibility
 
